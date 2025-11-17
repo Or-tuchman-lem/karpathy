@@ -27,6 +27,7 @@ main_agent: |
   - `Code Executor`: Runs and tests the code.
   - `Infra & Modal Operator`: Sets up and manages compute and infra (e.g., Modal jobs, environments, and scaling).
   - `Reviewer`: Monitors progress and provides feedback in `feedback.md`.
+  - `Data Discoverer`: Discovers and describes datasets. Saves to `dataset_description.md`. Uses the `markitdown` skill and custom code to read all other formats.
   
   Orchestrate these experts in cycles until the request is complete. Create additional experts as needed.
 
