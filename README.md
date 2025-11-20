@@ -1,7 +1,6 @@
 # Karpathy
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/K-Dense-AI/karpathy/pulls)
 
 An agentic Machine Learning Engineer that trains state-of-the-art ML models using Claude Code SDK and Google ADK. This is a very simple implemenation demonstraing the power of Claude Scientific Skills for machine learning.
@@ -14,7 +13,14 @@ An agentic Machine Learning Engineer that trains state-of-the-art ML models usin
 
 ## Setup
 
-### 1. Install Dependencies
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/K-Dense-AI/karpathy.git
+cd karpathy
+```
+
+### 2. Install Dependencies
 
 Install dependencies using `uv`:
 
@@ -22,7 +28,7 @@ Install dependencies using `uv`:
 uv sync
 ```
 
-### 2. Environment Variables
+### 3. Environment Variables
 
 Create a `.env` file in the `karpathy` directory with your API keys:
 
