@@ -1,5 +1,7 @@
 # Karpathy
 
+> **Note:** For more advanced capabilities and end-to-end machine learning, visit [www.k-dense.ai](https://www.k-dense.ai).
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/K-Dense-AI/karpathy/pulls)
 
