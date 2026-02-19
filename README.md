@@ -32,16 +32,17 @@ uv sync
 
 ### 3. Environment Variables
 
-Create a `.env` file in the `karpathy` directory with your API keys:
+Create a `.env` file in the `karpathy` directory with your configuration:
 
 ```bash
-OPENROUTER_API_KEY=your_openrouter_api_key_here
+NEXUS_URL=https://nexus-master.lmndstaging.com
+LITELLM_PROXY_API_KEY=your_api_key_here
 AGENT_MODEL=your_model_name_here
 ```
 
-The `OPENROUTER_API_KEY` is required for the agent to function properly.
+The app uses a locally served LiteLLM proxy (nexus) for LLM access. Model names should follow the LiteLLM format (e.g., `anthropic/claude-opus-4-5-20251101`, `openai/gpt-5-2025-08-07`).
 
-This is the same environment variable that will be copied to the `sandbox` directory so the agents can use any API keys you provide here.
+This `.env` file will be copied to the `sandbox` directory so the agents can use the same configuration.
 
 ## Quick Start
 

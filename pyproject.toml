@@ -3,7 +3,7 @@ name = "karpathy"
 version = "0.1.0"
 description = "Karpathy: An agentic Machine Learning Engineer"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = "==3.13"
 dependencies = [
     "claude-agent-sdk>=0.1.6",
     "google-adk>=1.18.0",

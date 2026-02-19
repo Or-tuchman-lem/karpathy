@@ -1,11 +1,41 @@
 import asyncio
+import logging
 from dataclasses import asdict
+from datetime import datetime
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 from .utils import load_instructions
 
 load_dotenv("karpathy/.env")
+
+# Configure logging to both console and file
+log_dir = Path("sandbox/logs")
+log_dir.mkdir(exist_ok=True)
+log_file = log_dir / f"karpathy_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
+
+# Create formatters
+console_formatter = logging.Formatter('%(asctime)s - [KARPATHY] %(message)s', datefmt='%H:%M:%S')
+file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - [KARPATHY] %(message)s')
+
+# Console handler
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(console_formatter)
+
+# File handler
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(file_formatter)
+
+# Configure logger
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+logger.info(f"📁 Logging to: {log_file}")
 
 COMMON_INSTRUCTIONS = load_instructions("common_instructions")
 
@@ -31,9 +61,35 @@ async def delegate_task(
         query,
     )
 
+    # Construct the full prompt that will be sent
+    full_user_prompt = f"{COMMON_INSTRUCTIONS}\n\nUser Prompt: {prompt}"
+    
+    logger.info("=" * 80)
+    logger.info("🚀 DELEGATING TASK TO EXPERT")
+    logger.info("=" * 80)
+    
+    # Log expert system prompt
+    logger.info("👤 EXPERT SYSTEM PROMPT:")
+    logger.info("-" * 80)
+    logger.info(append_system_prompt)
+    logger.info("-" * 80)
+    
+    # Log the full prompt being sent
+    logger.info("📝 FULL USER PROMPT SENT TO EXPERT:")
+    logger.info("-" * 80)
+    logger.info(full_user_prompt)
+    logger.info("-" * 80)
+    
+    # Log configuration
+    logger.info("⚙️  CONFIGURATION:")
+    logger.info(f"   - Working Directory: sandbox")
+    logger.info(f"   - Permission Mode: bypassPermissions")
+    logger.info(f"   - Preset: claude_code")
+    logger.info("=" * 80)
+
     result = None
     query_gen = query(
-        prompt=f"{COMMON_INSTRUCTIONS}\n\nUser Prompt: {prompt}",
+        prompt=full_user_prompt,
         options=ClaudeAgentOptions(
             system_prompt={
                 "type": "preset",
@@ -46,25 +102,53 @@ async def delegate_task(
         ),
     )
 
+    logger.info("⏳ Starting Claude Code query...")
+    message_count = 0
+    
     try:
         async for message in query_gen:
+            message_count += 1
+            logger.info(f"📨 Received message #{message_count}: {type(message).__name__}")
+            
             # Print tool use blocks
             if isinstance(message, AssistantMessage):
-                for block in message.content:
+                logger.debug(f"   Content blocks: {len(message.content)}")
+                for i, block in enumerate(message.content):
                     if isinstance(block, ToolUseBlock):
                         if block.name == "Skill":
-                            print(
-                                f"Using the skill: {block.input.get('skill', 'unknown')}"
-                            )
+                            skill_name = block.input.get('skill', 'unknown')
+                            logger.info(f"  🔧 Using Skill: {skill_name}")
+                            logger.debug(f"     Skill input: {block.input}")
+                            print(f"Using the skill: {skill_name}")
                         else:
+                            logger.info(f"  🛠️  Using Tool: {block.name}")
+                            # Log tool arguments (truncated for readability)
+                            if hasattr(block, 'input') and block.input:
+                                tool_input_str = str(block.input)
+                                if len(tool_input_str) > 200:
+                                    logger.debug(f"     Tool input: {tool_input_str[:200]}...")
+                                else:
+                                    logger.debug(f"     Tool input: {tool_input_str}")
                             print(f"Using the tool: {block.name}")
+                    else:
+                        # Log other block types (like text content)
+                        block_type = type(block).__name__
+                        if hasattr(block, 'text'):
+                            text_preview = block.text[:100] if len(block.text) > 100 else block.text
+                            logger.debug(f"   [{block_type}] {text_preview}...")
+                        else:
+                            logger.debug(f"   [{block_type}]")
 
             # Check for ResultMessage and return the result
             elif isinstance(message, ResultMessage):
+                logger.info("✅ Received ResultMessage - task complete!")
+                logger.debug(f"   Result keys: {list(asdict(message).keys())}")
                 result = asdict(message)
     finally:
         # Explicitly close the async generator
         await query_gen.aclose()
+        logger.info(f"🏁 Task delegation finished. Processed {message_count} messages.")
+        logger.info("=" * 80)
 
     return result
 
