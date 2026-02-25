@@ -112,17 +112,19 @@ def setup_uv_environment(
     
     print("\nCreating uv virtual environment...")
     venv_path = sandbox_path / ".venv"
-    
+
     try:
-        # Create uv environment
-        subprocess.run(
-            ["uv", "venv", str(venv_path)],
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        print(f"  [+] Virtual environment created at {venv_path}")
-        
+        if venv_path.exists():
+            print(f"  [+] Reusing existing virtual environment at {venv_path}")
+        else:
+            subprocess.run(
+                ["uv", "venv", str(venv_path)],
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            print(f"  [+] Virtual environment created at {venv_path}")
+
         # Install machine learning packages
         print("\nInstalling machine learning packages...")
         

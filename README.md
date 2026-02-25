@@ -46,7 +46,7 @@ This `.env` file will be copied to the `sandbox` directory so the agents can use
 
 ## Quick Start
 
-Run the startup script to set up the sandbox and start the ADK web interface:
+From the **project root** (not from `sandbox/`), run the startup script to set up the sandbox and start the ADK web interface:
 
 ```bash
 python start.py

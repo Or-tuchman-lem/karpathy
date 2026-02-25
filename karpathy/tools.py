@@ -39,6 +39,9 @@ logger.info(f"📁 Logging to: {log_file}")
 
 COMMON_INSTRUCTIONS = load_instructions("common_instructions")
 
+# Count delegations (main agent follow-up calls) for chain-of-thought visibility
+_delegation_count = 0
+
 
 async def delegate_task(
     prompt: str,
@@ -61,12 +64,21 @@ async def delegate_task(
         query,
     )
 
+    global _delegation_count
+    _delegation_count += 1
+
     # Construct the full prompt that will be sent
     full_user_prompt = f"{COMMON_INSTRUCTIONS}\n\nUser Prompt: {prompt}"
     
     logger.info("=" * 80)
-    logger.info("🚀 DELEGATING TASK TO EXPERT")
+    logger.info(f"🚀 DELEGATION #{_delegation_count} (main agent follow-up)")
     logger.info("=" * 80)
+    
+    # Log the follow-up question / task the main agent is asking the expert
+    logger.info("❓ FOLLOW-UP QUESTION / TASK TO EXPERT:")
+    logger.info("-" * 80)
+    logger.info(prompt)
+    logger.info("-" * 80)
     
     # Log expert system prompt
     logger.info("👤 EXPERT SYSTEM PROMPT:")
@@ -74,7 +86,7 @@ async def delegate_task(
     logger.info(append_system_prompt)
     logger.info("-" * 80)
     
-    # Log the full prompt being sent
+    # Log the full prompt being sent (common instructions + user prompt)
     logger.info("📝 FULL USER PROMPT SENT TO EXPERT:")
     logger.info("-" * 80)
     logger.info(full_user_prompt)
@@ -110,7 +122,7 @@ async def delegate_task(
             message_count += 1
             logger.info(f"📨 Received message #{message_count}: {type(message).__name__}")
             
-            # Print tool use blocks
+            # Log chain of thought (reasoning) and tool use
             if isinstance(message, AssistantMessage):
                 logger.debug(f"   Content blocks: {len(message.content)}")
                 for i, block in enumerate(message.content):
@@ -131,11 +143,20 @@ async def delegate_task(
                                     logger.debug(f"     Tool input: {tool_input_str}")
                             print(f"Using the tool: {block.name}")
                     else:
-                        # Log other block types (like text content)
+                        # Chain of thought: log expert reasoning / follow-up text at INFO
                         block_type = type(block).__name__
-                        if hasattr(block, 'text'):
-                            text_preview = block.text[:100] if len(block.text) > 100 else block.text
-                            logger.debug(f"   [{block_type}] {text_preview}...")
+                        if hasattr(block, 'text') and getattr(block, 'text', None):
+                            text = block.text
+                            max_log = 4000
+                            if len(text) > max_log:
+                                text_log = text[:max_log] + f"\n... [truncated, total {len(text)} chars]"
+                            else:
+                                text_log = text
+                            logger.info("💭 CHAIN OF THOUGHT / EXPERT REASONING:")
+                            logger.info("-" * 40)
+                            logger.info(text_log)
+                            logger.info("-" * 40)
+                            logger.debug(f"   [{block_type}] full length: {len(text)}")
                         else:
                             logger.debug(f"   [{block_type}]")
 
